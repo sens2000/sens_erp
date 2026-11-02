@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 	<select id="findSheetList" parameterType="java.util.HashMap" resultType="java.util.LinkedHashMap">
+		<mapper namespace="sy2015Mapper">
+ -->
+<!-- 맵핑될 DAO 인터페이스의 Full name 을 줍니다. -->
+<mapper namespace="com.sens.lush.service.dao.loginDAO">
+
+<!--
+//select * from prog_info order by newid;
+//select max(convert(int,progid)) from prog_info;
+insert into prog_info 
+select 
+convert(char(4),(select max(convert(int,progid)) from prog_info) + number(*))
+,program
+,progname
+,'m_' + progkind
+,newid
+,parm
+,company
+,gubun
+from prog_list
+where gubun = '01'; 
+
+insert into user_prog 
+select 'polsse' ,progid from prog_info where progkind like 'm_%';
+ -->
+<!-- id 속성은 DAO 의 메소드와 같아야 한다. 여기의 boardVO 는 mybatis-confg.xml 에 Alias 되어 있습니다. -->
+<select id="loginCheck" parameterType="java.util.HashMap" resultType="java.util.LinkedHashMap"> 
+	SELECT GROUPCD
+		,GROUPNAME
+		,COMCD
+		,COMNAME
+		,USERID
+		,USERNAME
+		,GRADE
+		,GUBUN
+		,CHK
+	FROM USER_ID A 
+		WHERE 1=1 
+		AND CHK != 'N'
+		AND A.USERID = #{SID} 
+		AND A.USERPASS = #{SPASS}
+</select>
+
+<select id="PosInfo" parameterType="java.util.HashMap" resultType="java.util.LinkedHashMap"> 
+SELECT 
+	POS.GROUPCD,
+	POS.GROUPNAME,
+	POS.COMCD,
+	POS.COMNAME,
+	POS.POSNO,
+	POS.POSNAME,
+	POS.CHK,
+	COM.TAXNAME,
+	COM.SANO,
+	COM.CARDSHOPNO,
+	COM.OWNER,
+	COM.TELNO,
+	COM.COADDR,
+	COM.MEMPER,
+	COM.CARDPER,
+	COM.GOLDPER,
+	COM.SILVERPER,
+	COM.GREENPER,
+	COM.BIRTH_POINT,
+	COM.MEMREG_POINT
+ FROM POS_ID POS,COMPANY_TB COM
+		WHERE 1=1 
+		AND POS.COMCD = COM.COMCD
+		AND POS.CHK != 'N'
+		AND AND POS.POSNO = = #{POSNO} 
+</select>
+			
+<select id="menuGroup" parameterType="java.util.HashMap" resultType="java.util.LinkedHashMap"> 
+	SELECT P.GUBUN,P.PROGRAM,P.PROGNAME,P.PROGKIND,P.PARM,P.COMPANY 
+    FROM PROG_INFO P,            USER_PROG  U
+   WHERE P.PROGID = U.PROGID 
+   	AND U.USERID = 'polsse'
+   	AND P.GUBUN != ''
+   	AND P.PROGKIND = #{PROGKIND}  
+	ORDER BY P.NEWID
+</select>
+
+<select id="selectGroupNews" parameterType="java.util.HashMap" resultType="java.util.LinkedHashMap"> 
+	SELECT  top 20
+			NEWS_KEY
+			,GROUPCD
+			,GROUPNAME
+			,NEWS_DATE
+			,NEWS_TIME
+			,TITLE
+			,CONTENT
+			,END_DATE
+			,FILENAME 
+	FROM GROUP_NEWS
+	ORDER BY GROUPCD
+			,NEWS_DATE
+			,NEWS_TIME
+</select>
+
+<select id="selectComDay" parameterType="java.util.HashMap" resultType="java.util.LinkedHashMap"> 
+	SELECT 	CDATE
+			,get_date_fmt(CDATE)  CDATE_FMT
+			,SUM(AMT) AMT
+			,SUM(CASHAMT) CASHAMT
+			,SUM(CARDAMT) CARDAMT
+			,SUM(VISITCNT) VISITCNT
+			,(IF VISITCNT = 0 THEN 0 ELSE CONVERT(DECIMAL(12,0),AMT / VISITCNT) ENDIF) AVGAMT
+	FROM SHOP_MST 
+	WHERE CDATE >  DATEFORMAT(GETDATE() -40 ,'YYYYMM00') 
+	GROUP BY CDATE
+	ORDER BY CDATE
+</select>
+	
+</mapper>
